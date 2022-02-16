@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
-class Users(db.Model):
+class User(db.Model):
     
     __tablename__ = 'users'
 
@@ -27,7 +27,7 @@ class Users(db.Model):
 
         hashed_pwd = Bcrypt.generate_password_hash(user_password).decode('UTF-8')
 
-        user = Users(username=username, email=email, user_password=hashed_pwd)
+        user = User(username=username, email=email, user_password=hashed_pwd)
 
         db.session.add(user)
         return user
@@ -50,7 +50,7 @@ class Users(db.Model):
 
 
 
-class Drinks(db.Model):
+class Drink(db.Model):
     
     __tablename__ = 'drinks'
 
@@ -59,39 +59,41 @@ class Drinks(db.Model):
     drink_image = db.Column(db.Text, nullable=True)
     drink_instructions = db.Column(db.Text, nullable=True)
 
-class Drink_ingredients(db.Model):
+class Drink_ingredient(db.Model):
     
     __tablename__ = 'drink_ingredients'
 
     drink_ingredient_id = db.Column(db.Integer, primary_key=True)
-    drink_ingredient_1 = db.Column(db.Text, nullable=True)
-    drink_ingredient_2 = db.Column(db.Text, nullable=True)
-    drink_ingredient_3 = db.Column(db.Text, nullable=True)
-    drink_ingredient_4 = db.Column(db.Text, nullable=True)
-    drink_ingredient_5 = db.Column(db.Text, nullable=True)
-    quantity_of_ingredient_1 = db.Column(db.Text, nullable=True)
-    quantity_of_ingredient_2 = db.Column(db.Text, nullable=True)
-    quantity_of_ingredient_3 = db.Column(db.Text, nullable=True)
-    quantity_of_ingredient_4 = db.Column(db.Text, nullable=True)
-    quantity_of_ingredient_5 = db.Column(db.Text, nullable=True)
-    measurement_type_1 = db.Column(db.Text, nullable=True)
-    measurement_type_2 = db.Column(db.Text, nullable=True)
-    measurement_type_3 = db.Column(db.Text, nullable=True)
-    measurement_type_4 = db.Column(db.Text, nullable=True)
-    measurement_type_5 = db.Column(db.Text, nullable=True)
+    drink_id = db.Column(db.Integer, db.ForeignKey('drink.drink_id', ondelete="cascade"),
+        primary_key=True,)
+    quantity = db.Column(db.Text, nullable=True)
+    measurement_unit = db.Column(db.Text, nullable=True)
 
+class Comment(db.Model):
+    
+    __tablename__ = 'comments'
 
-class Favorites(db.Model):
+    comment_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete="cascade"))
+    drink_id = db.Column(db.Integer, db.ForeignKey('drink.drink_id', ondelete="cascade"))
+    created_at = db.Column(db.DateTime, nullable=False)
+
+class Ingredient(db.Model):
+    
+    __tablename__ = 'ingredients'
+
+    ingredient_id = db.Column(db.Integer, primary_key=True)
+    drink_ingredient_id = db.Column(db.Integer, db.ForeignKey('Drink_ingredient.drink_ingredient_id', ondelete="cascade"))
+    ingredient_name = db.Column(db.Text, nullable=False)
+
+class Favorite(db.Model):
     
     __tablename__ = 'favorites'
 
     favorite_id = db.Column(db.Integer, primary_key=True)
-    drink_id = db.Column(db.Integer, db.ForeignKey('drink.drink_id', ondelete="cascade"),
-        primary_key=True,)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete="cascade"),
-        primary_key=True,)
-    comment = db.Column(db.Text, nullable=True),
-    created_at = db.Column(db.TimeStamp, nullable=False)
+    drink_id = db.Column(db.Integer, db.ForeignKey('drink.drink_id', ondelete="cascade"))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete="cascade"))
+
 
 def connect_db(app):
     db.app = app
